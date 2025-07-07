@@ -1,0 +1,8 @@
+# files associated with a virtual environment
+bin
+lib
+lib64
+pyvenv.cfg
+# python compiled files
+*.pyc
+*__pycache__
