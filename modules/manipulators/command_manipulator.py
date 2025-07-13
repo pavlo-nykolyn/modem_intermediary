@@ -1,5 +1,5 @@
 # Author: Pavlo Nykolyn
-# Last modification date: 03/07/2025
+# Last modification date: 08/07/2025
 
 """
 defines the Command_manipulator class, used to iterate the commands
@@ -78,7 +78,7 @@ class Command_manipulator :
             responses.sort(key=getKey)
             collects['responses'] = responses
             # deleting all the stored messages
-            self.request_instance.dispatch(Modem_command.commands[5].format(idx))
+            self.request_instance.dispatch(Modem_command.commands[6].format(idx))
             self.request_instance.receive()
       return collects
 

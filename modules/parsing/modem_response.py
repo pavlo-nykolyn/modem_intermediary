@@ -1,5 +1,5 @@
 # Author: Pavlo Nykolyn
-# Last modification date: 03/07/2025
+# Last modification date: 08/07/2025
 
 """
 Implements the Modem_response class that enables data exchanges between a DTE
@@ -114,7 +114,8 @@ class Modem_response(Modem_command) :
       """
       structure = {}
       tokens = self.tokenize(response)
-      if (self.c_type == Modem_command.commands[0] and
+      if ((self.c_type == Modem_command.commands[0] or
+           self.c_type == Modem_command.commands[1]) and
           len(tokens) == 1) :
          if self.aLogger :
             self.aLogger.store_message('the response {} does not contain the delimiter sequence {}'.format(response,
@@ -125,43 +126,35 @@ class Modem_response(Modem_command) :
          try :
             for token in tokens :
                token = token.decode()
-               idx = token.find('+CMTI')
                extraction_error = False # the slot may not reference a valid message
-               unsolicited = True # is the response unsolicited?
+               idx = token.find('+CMGR') # the response can be considered validated if idx is higher than or equal to zero
                if idx == -1 :
-                  idx = token.find('+CMGR')
-                  if idx == -1 :
-                     idx = token.find('+CMS ERROR')
-                     if idx == -1 :
-                        if (token and
-                            token != 'ERROR') : # some transmission equipments may return error whenever the slot of a storage medium is empty
-                           structure['SMS'] = token
-                     elif idx == 0 :
-                        extraction_error = True
-                  elif idx == 0 :
-                     unsolicited = False
-               if (idx == 0 and
+                  idx = token.find('+CMS ERROR')
+                  if idx >= 0 :
+                     extraction_error = True
+                  else :
+                     unsolicited = token.find('+CMTI') # -1 -> the read operation did not catch an unsolicited SMS-DELIVER indication
+                     if (unsolicited == -1 and
+                         token != 'ERROR') : # some transmission equipments may return ERROR whenever a slot does not contain a message
+                        structure['SMS'] = token
+               if (idx >= 0 and
                    not extraction_error) :
-                  token = token[6:] # skipping +<command>:
+                  token = token[idx + 6:] # skipping +CMGR:
                   token = token.strip().rstrip() # removing leading and trailing white-space characters
                   parameters = self.extract_parameters(token)
-                  if unsolicited :
-                     structure['SMS-storage'] = self.extract_string(parameters[0])
-                     structure['SMS-index'] = int(parameters[1])
-                  else :
-                     num_parameters = len(parameters)
-                     structure['SMS-status'] = self.translate_sm_status(self.extract_string(parameters[0]))
-                     structure['SMS-sender'] = self.extract_string(parameters[1])
-                     if self.aLogger :
-                        self.aLogger.store_message('the response contains {} parameters'.format(num_parameters),
-                                                   prefix='[INF]',
-                                                   f_ts=True)
-                     if (num_parameters == 3 or
-                         num_parameters == 10) :
-                        structure['Service-center-timestamp'] = self.extract_string(parameters[2])
-                     elif (num_parameters == 4 or
-                           num_parameters == 11) :
-                        structure['Service-center-timestamp'] = self.extract_string(parameters[3])
+                  num_parameters = len(parameters)
+                  structure['SMS-status'] = self.translate_sm_status(self.extract_string(parameters[0]))
+                  structure['SMS-sender'] = self.extract_string(parameters[1])
+                  if self.aLogger :
+                     self.aLogger.store_message('the response contains {} parameters'.format(num_parameters),
+                                                prefix='[INF]',
+                                                f_ts=True)
+                  if (num_parameters == 3 or
+                      num_parameters == 10) :
+                     structure['Service-center-timestamp'] = self.extract_string(parameters[2])
+                  elif (num_parameters == 4 or
+                        num_parameters == 11) :
+                     structure['Service-center-timestamp'] = self.extract_string(parameters[3])
          except TypeError :
             if self.aLogger :
                self.aLogger.store_message('token {} contains a value represented through an unexpected data type'.format(token),
@@ -179,26 +172,24 @@ class Modem_response(Modem_command) :
             sequence = []
             token = token.decode()
             idx = token.find('+CPMS')
-            if idx == -1 :
-               structure['data'] = token
-            if idx == 0 :
-               token = token[6:] # skipping +<command>;
-            token = token.strip().rstrip() # removing leading and trailing white-space characters
-            parameters = self.extract_parameters(token)
-            num_parameters = len(parameters)
-            if num_parameters == 9 :
-               for parameter in parameters :
-                  element = parameter
-                  if parameter.isdigit() :
-                     element = int(parameter)
-                  sequence.append(element)
-               structure['data'] = sequence.copy()
-            else :
-               if self.aLogger :
-                  self.aLogger.store_message('{} parameters are expected within the response to a {} command'.format(num_parameters,
-                                                                                                                     Modem_command.commands[1]),
-                                             prefix='[ERR]',
-                                             f_ts=True)
+            if idx >= 0 :
+               token = token[idx + 6:] # skipping +CPMS;
+               token = token.strip().rstrip() # removing leading and trailing white-space characters
+               parameters = self.extract_parameters(token)
+               num_parameters = len(parameters)
+               if num_parameters == 9 :
+                  for parameter in parameters :
+                     element = parameter
+                     if parameter.isdigit() :
+                        element = int(parameter)
+                     sequence.append(element)
+                  structure['data'] = sequence.copy()
+               else :
+                  if self.aLogger :
+                     self.aLogger.store_message('{} parameters are expected within the response to a {} command'.format(num_parameters,
+                                                                                                                        Modem_command.commands[1]),
+                                                prefix='[ERR]',
+                                                f_ts=True)
          except TypeError :
             if self.aLogger :
                self.aLogger.store_message('token {} contains a value represented through an unexpected data type'.format(token),

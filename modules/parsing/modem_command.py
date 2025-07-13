@@ -1,5 +1,5 @@
 # Author: Pavlo Nykolyn
-# Last modification date: 06/07/2025
+# Last modification date: 08/07/2025
 
 """
 a simple class that collects data related to the supported
@@ -10,6 +10,7 @@ class Modem_command :
    # for the love of God, DO NOT change the position of the elements within commands
    commands = ('read-SMS',
                'get-maximum-record-index',
+               'disable-new-message-indication',
                'show-text-mode-parameters',
                'inhibit-text-mode-parameters',
                'delete-SMS',
@@ -24,16 +25,18 @@ class Modem_command :
                {'name' : commands[1],
                 'decoded' : 'AT+CPMS?'},
                {'name' : commands[2],
-                'decoded' : 'AT+CSDH=1'},
+                'decoded' : 'AT+CNMI=0,0,0,0,0'},
                {'name' : commands[3],
-                'decoded' : 'AT+CSDH=0'},
+                'decoded' : 'AT+CSDH=1'},
                {'name' : commands[4],
-                'decoded' : 'AT+CMGD={},0'}, # the index gets updated dynamically
+                'decoded' : 'AT+CSDH=0'},
                {'name' : commands[5],
-                'decoded' : 'AT+CMGD=0,4'},
+                'decoded' : 'AT+CMGD={},0'}, # the index gets updated dynamically
                {'name' : commands[6],
-                'decoded' : 'ATE0'},
+                'decoded' : 'AT+CMGD=0,4'},
                {'name' : commands[7],
-                'decoded' : 'ATE1'},
+                'decoded' : 'ATE0'},
                {'name' : commands[8],
+                'decoded' : 'ATE1'},
+               {'name' : commands[9],
                 'decoded' : 'AT'})

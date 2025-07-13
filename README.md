@@ -68,6 +68,27 @@ Le chiavi definite in ciascuna mappa sono:
 - **Service-center-timestamp** : istante temporale del service center che ha eseguito l'invio del messaggio;
 - **SMS** : corpo del messaggio;
 
+il formato della stringa identificata da **Service-center-timestamp** è _yy/MM/dd,hh:mm:ss±zz_
+
+- yy indica l'anno dell'istante riferito al secolo corrente (\[0, 99\]);
+- MM indica il mese dell'istante (\[1, 12\]);
+- dd indica il giorno mensile dell'istante (\[1, 31\]);
+- hh indica l'ora dell'istante (\[0, 23\]);
+- mm indica i minuti dell'istante (\[0, 59\]);
+- ss indica i secondi dell'istante (\[0, 59\]);
+- zz indica il numero di quarti d'ora che separano l'istante locale da quello UTC;
+
+le mappe stampate sono ordinate rispetto al valore dell'istante temporale (ordine crescente). Nell'elaborare il valore,
+ho preferito omettere l'indicazione del time zone dai confronti necessari per l'ordinamento in quanto, ho ipotizzato
+che i service center siano dislocati in Italia. Mi rendo conto che si tratta di un'ipotesi conservativa ma, è sufficiente
+per le mie esigenze attuali. Detto ciò, ho provveduto a definire l'interfaccia della funzione create\_instance\_scts\_aware
+(la si può trovare nel modulo ts\_instance) per un'eventuale estensione futura;
+
+[!WARNING]
+> è possibile che il numero di messaggi stampati sia superiore a quello estratto dalla risposta del comando +CPMS?. In tal caso\
+  sono stati ricevuti dei messaggi dopo l'invio del comando stesso. Dato che read-all-sms presuppone l'interrogazione di tutti\
+  gli slot resi disponibili dal dispositivo di archiviazione configurato, tale comportamento è inevitabile
+
 per altri comandi, la mappa, allo stato attuale, contiene una singola chiave *data* che definisce una sequenza
 di elementi. La loro natura dipende dal comando inviato;
 

@@ -1,0 +1,9 @@
+# excluding some files from the build context
+# the CLI module (not needed)
+modem_communication.py
+# the requirements file for the CLI module
+requirements.txt
+# all compiled python files
+**/*.pyc
+# all .ini files (there may be test instances of uwsgi)
+*.ini

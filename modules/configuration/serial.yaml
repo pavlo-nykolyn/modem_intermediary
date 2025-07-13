@@ -1,7 +1,7 @@
 ---
 # used to configure a serial port that will be used by modem_intermediary
 port : 
-  name : /dev/ttyUSB0
+  name : /dev/ttyUSB1
   configuration :
     baud-rate : 9600
     data-bits : 8
